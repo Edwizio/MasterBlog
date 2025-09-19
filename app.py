@@ -1,36 +1,75 @@
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
+
 
 def load_data():
-    """
-    This functions takes a json file as parameter and returns its data as a string
-    :return data:
-    """
+    """This functions reads the file data.json and returns its data as a string"""
+
     with open("data.json", "r") as reader:
         data = json.loads(reader.read())
 
     return data
 
-blog_posts = load_data()
+
+def write_data():
+    """This functions writes new data on the file data.json"""
+
+    author = request.form.get('author')
+    title = request.form.get('title')
+    content = request.form.get('content')
+
+    if not author or not title or not content:
+        return False  # Signal missing data
+
+    # Load existing posts
+    with open('data.json', 'r') as reader:
+        posts = json.load(reader)
+
+    # Generate a new ID automatically
+    new_post = {
+        "id": len(posts) + 1,
+        "author": author,
+        "title": title,
+        "content": content
+    }
+    posts.append(new_post)
+
+    # Save to file
+    with open('data.json', 'w') as writer:
+        json.dump(posts, writer)
+    return True
 
 app = Flask(__name__)
+
+@app.route('/')
+def index():
+    blog_posts = load_data()
+    return render_template('index.html', posts=blog_posts)
+
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
     if request.method == 'POST':
-        # We will fill this in the next step
-        pass
+        # Try writing the data
+        if not write_data():
+            return "All fields are required!", 400  # Show an error if fields are missing
+        return redirect(url_for('index'))  # Redirect only on success
     return render_template('add.html')
 
+@app.route('/delete/<int:post_id>', methods=['GET', 'POST'])
+def delete(post_id):
+    # Load existing posts
+    posts = load_data()
 
+    # Filter out the post to delete
+    posts = [post for post in posts if post.get("id") != post_id]
 
-@app.route('/')
-def index():
+    # Save updated posts back to the file
+    with open('data.json', 'w') as writer:
+        json.dump(posts, writer, indent=4)
 
-    blog_posts = load_data()
-
-    return render_template('index.html', posts=blog_posts)
-
+    # Redirect to home page
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
