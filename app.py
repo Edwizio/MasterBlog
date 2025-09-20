@@ -36,7 +36,7 @@ def write_data():
 
     # Save to file
     with open('data.json', 'w') as writer:
-        json.dump(posts, writer)
+        json.dump(posts, writer,indent=4, sort_keys=True)
     return True
 
 app = Flask(__name__)
@@ -68,7 +68,7 @@ def delete(post_id):
 
     # Save updated posts back to the file
     with open('data.json', 'w') as writer:
-        json.dump(posts, writer, indent=4)
+        json.dump(posts, writer, indent=4, sort_keys=True)
 
     # Redirect to home page
     return redirect(url_for('index'))
@@ -103,7 +103,7 @@ def update(post_id):
 
         # Save changes to file
         with open('data.json', 'w') as writer:
-            json.dump(posts, writer, indent=4)
+            json.dump(posts, writer, indent=4, sort_keys=True)
 
         return redirect(url_for('index'))
 
