@@ -49,6 +49,7 @@ def index():
 
 @app.route('/add', methods=['GET', 'POST'])
 def add():
+    """This method and route adds a new blog post"""
     if request.method == 'POST':
         # Try writing the data
         if not write_data():
@@ -58,6 +59,7 @@ def add():
 
 @app.route('/delete/<int:post_id>', methods=['GET', 'POST'])
 def delete(post_id):
+    """This method and route deletes a blog post"""
     # Load existing posts
     posts = load_data()
 
@@ -70,6 +72,45 @@ def delete(post_id):
 
     # Redirect to home page
     return redirect(url_for('index'))
+
+
+@app.route('/update/<int:post_id>', methods=['GET', 'POST'])
+def update(post_id):
+    """This method and route updates a blog post"""
+
+    # Load existing posts
+    posts = load_data()
+
+    # Filter out the post to update
+    post = next((p for p in posts if p.get("id") == post_id), None)
+
+    if post is None:
+        return "Post not found", 404
+
+    if request.method == 'POST':
+        # Get updated data from form
+        author = request.form.get('author')
+        title = request.form.get('title')
+        content = request.form.get('content')
+
+        if not author or not title or not content:
+            return "All fields are required!", 400
+
+        # Update fields
+        post['author'] = author
+        post['title'] = title
+        post['content'] = content
+
+        # Save changes to file
+        with open('data.json', 'w') as writer:
+            json.dump(posts, writer, indent=4)
+
+        return redirect(url_for('index'))
+
+    # For GET request, display the update form
+    return render_template('update.html', post=post)
+
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
