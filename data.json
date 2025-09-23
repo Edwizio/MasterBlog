@@ -28,5 +28,11 @@
         "content": "I want to be an actress when I grow up",
         "id": 5,
         "title": "Fifth post"
+    },
+    {
+        "author": "Zoya",
+        "content": "I love mama",
+        "id": 89324,
+        "title": "Sixth post"
     }
 ]

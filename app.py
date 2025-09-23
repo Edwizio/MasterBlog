@@ -1,14 +1,24 @@
 import json
+import random
+from json.decoder import JSONDecodeError
+from random import randint
 from flask import Flask, render_template, request, redirect, url_for
 
 
 def load_data():
     """This functions reads the file data.json and returns its data as a string"""
 
-    with open("data.json", "r") as reader:
-        data = json.loads(reader.read())
+    try:
+        with open("data.json", "r") as reader:
+            data = json.load(reader)
+            return data
 
-    return data
+    except FileNotFoundError:
+        return "Post not found", 404
+    except JSONDecodeError as e:
+        print(f"Invalid JSON: {e}")
+        return None
+
 
 
 def write_data():
@@ -27,7 +37,7 @@ def write_data():
 
     # Generate a new ID automatically
     new_post = {
-        "id": len(posts) + 1,
+        "id": random.randint(0,100000),
         "author": author,
         "title": title,
         "content": content
@@ -57,14 +67,14 @@ def add():
         return redirect(url_for('index'))  # Redirect only on success
     return render_template('add.html')
 
-@app.route('/delete/<int:post_id>', methods=['GET', 'POST'])
+@app.route('/delete/<int:post_id>', methods=['POST'])
 def delete(post_id):
     """This method and route deletes a blog post"""
     # Load existing posts
     posts = load_data()
 
     # Filter out the post to delete
-    posts = [post for post in posts if post.get("id") != post_id]
+    posts = [post for post in posts if post["id"] != post_id]
 
     # Save updated posts back to the file
     with open('data.json', 'w') as writer:
@@ -82,7 +92,7 @@ def update(post_id):
     posts = load_data()
 
     # Filter out the post to update
-    post = next((p for p in posts if p.get("id") == post_id), None)
+    post = next((p for p in posts if p["id"] == post_id), None)
 
     if post is None:
         return "Post not found", 404
