@@ -1,7 +1,7 @@
 import json
 import random
 from json.decoder import JSONDecodeError
-from random import randint
+
 from flask import Flask, render_template, request, redirect, url_for
 
 
@@ -9,15 +9,17 @@ def load_data():
     """This functions reads the file data.json and returns its data as a string"""
 
     try:
-        with open("data.json", "r") as reader:
+        with open("data.json", "r", encoding="utf-8") as reader:
             data = json.load(reader)
             return data
 
+    # Returning empty list in case of errors to prevent the route functions from crashing
     except FileNotFoundError:
-        return "Post not found", 404
+        print("data.son file not found")
+        return []
     except JSONDecodeError as e:
         print(f"Invalid JSON: {e}")
-        return None
+        return []
 
 
 
@@ -37,7 +39,8 @@ def write_data():
 
     # Generate a new ID automatically
     new_post = {
-        "id": random.randint(0,100000),
+        # iterating through all the posts, selecting the largest ID and adding 1 to it to assign to the new post.
+        "id": max(post['id'] for post in posts) + 1 if posts else 1,
         "author": author,
         "title": title,
         "content": content
