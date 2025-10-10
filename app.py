@@ -1,5 +1,4 @@
 import json
-import random
 from json.decoder import JSONDecodeError
 
 from flask import Flask, render_template, request, redirect, url_for
